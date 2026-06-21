@@ -3,6 +3,7 @@ import {PrismaClient} from '../prisma/generated/client/index.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+dotenv.config(); 
 
 // Create a PostgreSQL connection pool
 const pool = new Pool({
