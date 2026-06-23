@@ -32,11 +32,11 @@ async function comparePassword(plain, hashed) {
 async function findUserById(id) {
   return prisma.user.findUnique({ where: { id: Number(id) } });
 }
-async function rotateToken(oldJti, userId) {
+
+async function rotateToken(oldJti, userId, newRefreshToken) {
   if (!oldJti) return null;
 
   try {
-    // Interactive transaction (allows logic inside the transaction)
     const newToken = await prisma.$transaction(async (tx) => {
       
       // 1. Check if the token exists
@@ -46,7 +46,6 @@ async function rotateToken(oldJti, userId) {
 
       // 2. If it's missing, it's a reuse/replay attack
       if (!existingToken) {
-        // We "throw" to roll back the transaction and trigger the catch block
         throw new Error("REUSE_DETECTED");
       }
 
@@ -59,6 +58,7 @@ async function rotateToken(oldJti, userId) {
       return await tx.refreshToken.create({
         data: {
           userId: userId,
+          token: newRefreshToken, 
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
       });
@@ -69,17 +69,14 @@ async function rotateToken(oldJti, userId) {
   } catch (error) {
     if (error.message === "REUSE_DETECTED") {
       console.warn(`[SECURITY] Token reuse detected for user ${userId}. JTI: ${oldJti}`);
-      // This is where you'd optionally delete all user tokens
     } else {
-      // Catch specific Prisma error P2025 (Record to delete not found) 
-      // in case of a race condition between findUnique and delete
       if (error.code === 'P2025') {
           console.warn("Race condition: Token was deleted by another request.");
       } else {
           console.error("Rotation Database Error:", error);
       }
     }
-    return null; // Controller sees null and returns 403, NO MORE 500!
+    return null; 
   }
 }
 async function  findToken(jti) {

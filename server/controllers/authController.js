@@ -2,6 +2,7 @@
 import * as authServise from '../servises/authService.js'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import { generateAndSendTokens } from '../utils/tokens.js';
 
 // POST /signup
@@ -116,52 +117,56 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const refreshToken = async (req, res) => {
-    // 1. Get the token from the cookie
     const token = req.cookies?.refreshToken;
     if (!token) return res.sendStatus(401);
 
     try {
-        // 2. Verify the Refresh Token
+        // 1. Verify the current Refresh Token
         const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    
+        // 2. Pre-generate the next JTI right now ⚡
+        const nextJti = uuidv4();
 
-        // 3. Perform the Rotation in the Database
-        // We send the old ID to delete it and create a new one
-        const newTokenRecord = await authServise.rotateToken(decoded.jti, decoded.userId);
-
-        if (!newTokenRecord) {
-          res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'None', secure: true }); // Clear the bad cookie
-            return res.status(403).json({ message: "Invalid session" });
-        }
-
-        // 4. Generate NEW tokens using the NEW ID (jti) from the DB
-        const newJti = newTokenRecord.id;
-
-        const accessToken = jwt.sign(
-            { userId: decoded.userId, jti: newJti, userRoles: decoded.userRoles },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '15m' } // Standard time
-        );
-
+        // 3. Sign the NEW Refresh Token with the pre-generated JTI
         const newRefreshToken = jwt.sign(
-            { userId: decoded.userId, jti: newJti,userRoles: decoded.userRoles },
+            { userId: decoded.userId, jti: nextJti, userRoles: decoded.userRoles },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
 
-        // 5. Send the NEW cookie back to the browser
+        // 4. Perform the Rotation in the Database
+        // Modify your service slightly if needed, or pass nextJti inside the service to force the ID
+        const newTokenRecord = await authServise.rotateToken(decoded.jti, decoded.userId, newRefreshToken);
+
+        if (!newTokenRecord) {
+            res.clearCookie('refreshToken',
+                                        { httpOnly: true,
+                                         secure: process.env.NODE_ENV === "production", 
+                                         sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", }); 
+            return res.status(403).json({ message: "Invalid session" });
+        }
+
+        // 5. If your database auto-generated an ID instead, use that for the Access Token!
+        const finalJti = newTokenRecord.id; 
+
+        const accessToken = jwt.sign(
+            { userId: decoded.userId, jti: finalJti, userRoles: decoded.userRoles },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' } 
+        );
+
+        // 6. Send cookie and response back
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: true, // true in production
-            sameSite: 'None',
-            maxAge:  24 * 60 * 60 * 1000 // 1 day
+          secure: process.env.NODE_ENV === "production", 
+          sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+            maxAge: 24 * 60 * 60 * 1000 
         });
 
-        // 6. Return the Access Token to the React frontend
         return res.json({ accessToken });
 
     } catch (err) {
         console.error("Refresh Error:", err.message);
-        // If rotation fails or token is expired
         return res.sendStatus(403);
     }
 };

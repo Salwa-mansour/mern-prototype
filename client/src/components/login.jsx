@@ -49,7 +49,10 @@ const login = () => {
         );
         // console.log(JSON.stringify(response?.data));
        const authData = getAuthDataFromToken(response?.data?.accessToken);
-        setAuth({email,...authData});
+           setAuth({
+            ...authData,
+            accessToken
+        });
        // setEmail('');
        resetEmail('');
         setPassword('');

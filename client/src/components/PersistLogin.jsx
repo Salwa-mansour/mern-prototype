@@ -1,5 +1,5 @@
-import { useState ,  useEffect, use } from "react";
-import { Outlet } from "react-router";
+import { useState ,  useEffect} from "react";
+import { Outlet } from "react-router-dom";
 import useRefreshToken from "../hooks/useRefreshToken";
 import {useAuth} from "../hooks/useAuth";
 import useLocalStorage from "../hooks/useLocalStorage";
@@ -28,7 +28,7 @@ const persistLogin =()=>{
          },[]);
 
         useEffect(()=>{
-            console.log(`isLoding: ${isLoading}`);
+            console.log(`presist: ${persist}`);
             console.log(`AT:${JSON.stringify(auth?.accessToken)}`)
         },[isLoading]);
 

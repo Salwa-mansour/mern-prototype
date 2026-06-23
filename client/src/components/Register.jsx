@@ -2,15 +2,21 @@ import axios from '../api/axios';
 import { useRef ,useState,useEffect} from "react";
 import {faCheck ,faTimes,faInfoCircle, faEye,faEyeSlash} from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; 
+import { useNavigate, Link } from "react-router-dom"; 
+import { useAuth } from "../hooks/useAuth"; 
+import getAuthDataFromToken from "../utils/jwtUtils"; 
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/ ;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}/ ;
 
-const REGISTER_URL = '/signup';
+const REGISTER_URL = '/register';
 
 
 const Register = () => {
+  const { setAuth } = useAuth(); 
+  const navigate = useNavigate();
+
   const userNameRef = useRef();
   const errRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +39,7 @@ const Register = () => {
   const [showPwd, setShowPwd] = useState(false);
 
   const [errMsg, setErrMsg] = useState('');
-  const [success, setSuccess] = useState(false);
+//   const [success, setSuccess] = useState(false);
 
   useEffect(() => { userNameRef.current.focus(); }, [])
    useEffect(() => {
@@ -76,13 +82,24 @@ const Register = () => {
     try {
         const response = await axios.post(REGISTER_URL, data,  { withCredentials: true } );
 
-        setSuccess(true);
+       
+        const accessToken = response.data?.accessToken;
+        
+        
+        const authData = getAuthDataFromToken(accessToken);
+
+      
+        setAuth({
+            ...authData,
+            accessToken
+        });
         // Clear inputs
         setUserName('');
         setPassword('');
         setConfirmPassword('');
         setErrMsg(''); // Clear any old errors
 
+        navigate('/', { replace: true });
     } catch (err) {
         // 1. Check if the server even responded (Network Error)
         if (!err?.response) {
@@ -106,14 +123,7 @@ const Register = () => {
 
     return (
           <>
-            {success ? (
-                <section>
-                    <h1>Success!</h1>
-                    <p>
-                        <a href="#">Sign In</a>
-                    </p>
-                </section>
-            ) : (
+            { 
                 <section>
                     <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
                     <h1>Register</h1>
@@ -243,11 +253,11 @@ const Register = () => {
                         Already registered?<br />
                         <span className="line">
                             {/*put router link here*/}
-                            <a href="#">Sign In</a>
+                            <Link to="/login">Sign In</Link>
                         </span>
                     </p>
                 </section>
-            )}
+            }
         </>
     );
 };
