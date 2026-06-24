@@ -9,8 +9,13 @@ import authRouter from './routes/authRouter.js';
 const app = express();
 
 const allowedOrigins = ['http://localhost:5173'];
+const corsOptions = {
+    origin:allowedOrigins, 
+    credentials: true,                
+    optionsSuccessStatus: 200         
+};
 // app.use(cors({ origin: `http://localhost:${process.env.urlPORT || 3000}`, credentials: true })); // ADJUSTED: for frontend communication
-app.use(cors({ origin: allowedOrigins , credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json()); // ADJUSTED: To handle JSON API requests instead of form-data only
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // ADDED: Crucial for HttpOnly cookie security

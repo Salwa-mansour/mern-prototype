@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, Link } from "react-router-dom"; 
 import { useAuth } from "../hooks/useAuth"; 
 import getAuthDataFromToken from "../utils/jwtUtils"; 
+import useInput from "../hooks/useInput";
+import useToggle from "../hooks/useToggle";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/ ;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,11 +23,12 @@ const Register = () => {
   const errRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [userName, setUserName] = useState('');
+  
+  const [userName, resetUserName , userNameAttribs] = useInput('userName','');// useState
   const [validName, setValidName] = useState(false);
   const [userFocus, setUserFocus] = useState(false);
 
-  const [email, setEmail] = useState('');
+  const [email, resetEmail , emailAttribs] = useInput('email','');// useState
   const [validEmail, setValidEmail] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
 
@@ -37,7 +40,8 @@ const Register = () => {
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-
+ const [persist, setPersist] = useToggle('persist',false);
+ 
   const [errMsg, setErrMsg] = useState('');
 //   const [success, setSuccess] = useState(false);
 
@@ -94,7 +98,8 @@ const Register = () => {
             accessToken
         });
         // Clear inputs
-        setUserName('');
+        resetEmail('')
+        resetUserName('');
         setPassword('');
         setConfirmPassword('');
         setErrMsg(''); // Clear any old errors
@@ -144,8 +149,7 @@ const Register = () => {
                         id="username"
                         ref={userNameRef}
                         autoComplete="off"
-                        onChange={(e) => setUserName(e.target.value)}
-                        value={userName}
+                       {...userNameAttribs}
                         required
                         aria-invalid={validName ? "false" : "true"}
                         aria-describedby="uidnote"
@@ -174,8 +178,7 @@ const Register = () => {
                     <input
                         type="email"
                         id="email"
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
+                        {...emailAttribs}
                         required
                         aria-invalid={validEmail ? "false" : "true"}
                         aria-describedby="emailnote"
@@ -244,7 +247,14 @@ const Register = () => {
                             <FontAwesomeIcon icon={faInfoCircle} />
                             Must match the first password input field.
                         </p>
-
+                   <div className="persistCheck" >
+                    <input
+                     type="checkbox"
+                     id="persist"
+                     onChange={setPersist} 
+                     checked={persist} />
+                     <label htmlFor="persist">trust this devise</label>
+                    </div>
                         <button disabled={!validName || !validEmail || !validPassword || !validMatch || isLoading ? true : false}>
                             {isLoading ? "Signing Up..." : "Sign Up"}
                         </button>

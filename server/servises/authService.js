@@ -33,7 +33,8 @@ async function findUserById(id) {
   return prisma.user.findUnique({ where: { id: Number(id) } });
 }
 
-async function rotateToken(oldJti, userId, newRefreshToken) {
+// 💡 Add newJti as the fourth parameter
+async function rotateToken(oldJti, userId, newRefreshToken, newJti) {
   if (!oldJti) return null;
 
   try {
@@ -54,9 +55,10 @@ async function rotateToken(oldJti, userId, newRefreshToken) {
         where: { id: oldJti },
       });
 
-      // 4. Create the new one
+      // 4. 💡 FIXED: Explicitly force the database row to use the token's JTI
       return await tx.refreshToken.create({
         data: {
+          id: newJti, // 🌟 Save the synchronized JTI here!
           userId: userId,
           token: newRefreshToken, 
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),

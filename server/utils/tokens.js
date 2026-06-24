@@ -6,20 +6,21 @@ import prisma from '../data/connection.js';
 export const generateAndSendTokens = async (user, res) => {
   const jti = uuidv4();
 
+  const tokenPayload = { 
+    jti,
+    userId: user.id, 
+    email: user.email, 
+    username: user.name // or user.userName depending on your Prisma schema field
+  };
   const refreshToken = jwt.sign(
-    { userId: user.id, 
-      jti ,
-    },
+    tokenPayload,
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: "1d" }
   );
 
   // Generate Tokens 
   const accessToken = jwt.sign(
-    { userId: user.id, 
-      jti ,
-    
-    },
+    tokenPayload,
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "15m" }
   );

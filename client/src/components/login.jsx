@@ -12,7 +12,7 @@ import { faEye,faEyeSlash} from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; 
 
 const login = () => {
-    const { setAuth  } = useAuth();
+    const { setAuth } = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,13 +47,13 @@ const login = () => {
                 withCredentials: true
             }
         );
-        // console.log(JSON.stringify(response?.data));
+       const accessToken = response?.data?.accessToken;
        const authData = getAuthDataFromToken(response?.data?.accessToken);
            setAuth({
             ...authData,
             accessToken
         });
-       // setEmail('');
+     
        resetEmail('');
         setPassword('');
         navigate(from, { replace: true });
