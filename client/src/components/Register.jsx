@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import getAuthDataFromToken from "../utils/jwtUtils"; 
 import useInput from "../hooks/useInput";
 import useToggle from "../hooks/useToggle";
+import "../css/form.css";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/ ;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

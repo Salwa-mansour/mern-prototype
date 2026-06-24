@@ -1,7 +1,7 @@
 import { useState,useRef,useEffect} from "react";
 import {useAuth} from "../hooks/useAuth";
 import {Link , useNavigate , useLocation } from 'react-router-dom';
-
+import "../css/form.css";
 import axios from "../api/axios";
 import getAuthDataFromToken from "../utils/jwtUtils";
 import useInput from "../hooks/useInput";

@@ -25,9 +25,14 @@ app.use("/", authRouter);
 // The Global Error Middleware
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
+    
+    // Log the error locally on your server console so you can track bugs
+    console.error(`💥 Error [${statusCode}]: ${err.message}`);
+
+    // Return the response in a shape your frontend expects
     res.status(statusCode).json({
         status: 'error',
-        message: err.message || 'Internal Server Error'
+        error: err.message || 'Internal Server Error' // 💡 Changed from 'message' to 'error' to match your old controllers
     });
 });
 

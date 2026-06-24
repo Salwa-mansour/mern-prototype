@@ -9,7 +9,7 @@ const Home = () => {
         <section>
             <h1>Home</h1>
             <br />
-            <p>wellcom {auth?.email || 'Guest'}</p>
+            <p>wellcom {auth?.username || 'Guest'}</p>
          
         
         </section>
