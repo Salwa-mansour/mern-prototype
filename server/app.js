@@ -5,8 +5,9 @@ import express from 'express';
 import cookieParser from 'cookie-parser'; // ADDED: To read refresh tokens from cookies
 import cors from 'cors'; // ADDED: To allow your frontend to talk to the API
 import authRouter from './routes/authRouter.js';
-
+import './config/passport.js';
 const app = express();
+
 
 const allowedOrigins = ['http://localhost:5173'];
 const corsOptions = {
@@ -19,8 +20,13 @@ app.use(cors(corsOptions));
 app.use(express.json()); // ADJUSTED: To handle JSON API requests instead of form-data only
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // ADDED: Crucial for HttpOnly cookie security
+import passport from 'passport';
+app.use(passport.initialize());
 
-app.use("/", authRouter);
+app.get("/", (req, res) => {
+    res.json({ message: "Welcome to the API server!" });
+});
+app.use("/auth", authRouter);
 
 // The Global Error Middleware
 app.use((err, req, res, next) => {

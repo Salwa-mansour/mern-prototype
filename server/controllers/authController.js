@@ -1,5 +1,6 @@
 import * as authService from '../servises/authService.js'
 import bcrypt from 'bcryptjs';
+import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { generateAndSendTokens } from '../utils/tokens.js';
@@ -38,6 +39,11 @@ export const registerUser = catchAsync(async (req, res, next) => {
 export const loginUser = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
+// if (!password) {
+//   const err = new Error("This account uses Google Sign-In. Please log in with Google.");
+//   err.statusCode = 401;
+//   throw err;
+// }
   if (!email || !password) {
     const err = new Error("Email and password are required");
     err.statusCode = 400;
@@ -157,4 +163,19 @@ export const refreshToken = catchAsync(async (req, res, next) => {
   });
 
   return res.json({ accessToken });
+});
+
+export const googleAuth = catchAsync(async (req, res, next) => {
+  // 💡 Safety Guard: If Passport authentication failed or profile is missing, exit safely!
+  if (!req.user) {
+    const err = new Error("Authentication failed: No user profile received from Google.");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  // 1. Generate the access token and set your secure HttpOnly cookie!
+  const accessToken = await generateAndSendTokens(req.user, res);
+  
+  // 2. Redirect back to your React client with the short-lived access token
+  return res.redirect(`http://localhost:5173/oauth-callback?token=${accessToken}`);
 });

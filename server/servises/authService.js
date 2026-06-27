@@ -3,7 +3,11 @@ import bcrypt from 'bcryptjs';
 
 // account related queries
 async function createUser({ userName, email, password }) {
-  const hashedPassword = await bcrypt.hash(password, 10);
+  let hashedPassword = null;
+  // Skip it if it's null (Google OAuth signup).
+  if (password) {
+    hashedPassword = await bcrypt.hash(password, 10);
+  }
   return prisma.user.create({
     data: { name:userName, email, password: hashedPassword },
   });
@@ -12,7 +16,7 @@ async function allUsers() {
   return prisma.user.findMany();
 }
 async function findByEmail(email) {
-console.log(email)
+
   return prisma.user.findUnique({
     where: {
       email: email, 

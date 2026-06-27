@@ -14,7 +14,7 @@ const useRefreshToken = () => {
 
         refreshPromise = (async () => {
             try {
-                const response = await axios.get('/refresh', {
+                const response = await axios.get('auth/refresh', {
                     withCredentials: true
                 });
 

@@ -18,7 +18,7 @@ function LogoutBtn() {
     setAuth({});
     try {
       // 💡 Fix 3: Changed 'axios' to 'axiosPrivate' to prevent a 'ReferenceError: axios is not defined' crash
-      await axiosPrivate.post('/logout', {}); 
+      await axiosPrivate.post('auth/logout', {}); 
     } catch (err) {
       console.error("Backend failed to clear session:", err);
     } finally {

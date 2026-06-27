@@ -6,7 +6,7 @@ import axios from "../api/axios";
 import getAuthDataFromToken from "../utils/jwtUtils";
 import useInput from "../hooks/useInput";
 import useToggle from "../hooks/useToggle";
-const LOGIN_URL = '/login';
+const LOGIN_URL = 'auth/login';
 
 import { faEye,faEyeSlash} from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; 
@@ -118,6 +118,9 @@ const login = () => {
                      <label htmlFor="persist">trust this devise</label>
             </div>
         </form>
+        <a href="http://localhost:3000/auth/google" className="google-btn">
+            Sign in with Google
+        </a>
         <p>Need an account? <a href="/register">Register</a></p>
     </section>
    
